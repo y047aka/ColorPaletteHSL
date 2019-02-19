@@ -1,0 +1,25 @@
+body, header, section, article, div,
+dl, dt, dd,
+ol, ul, li,
+h1, h2, h3, h4, h5, h6,
+hr, img, form, fieldset, input, textarea, p, blockquote, th, tr, td {
+	margin: 0;
+	padding: 0;
+	font-family: "HiraKakuProN-W3";
+	font-size: 11pt;
+	font-weight: normal;
+	line-height: 1.6em;
+}
+
+table {
+	width: 100%;
+	margin: 2rem 0;
+}
+
+td {
+	width: 14.28%;
+	padding: 1rem 1.3rem;
+	background: #FFF;
+	color: #FFF;
+	box-shadow: 0 0 5px 0 #DDD;
+}

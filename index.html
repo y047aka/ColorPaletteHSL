@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<title>HSL</title>
+	<link rel="stylesheet" type="text/css" href="layout.css">
+</head>
+
+<body>
+	<div id="hsl-palette"></div>
+</body>
+<script type="text/javascript">
+	const test = document.getElementById("hsl-palette");
+
+	const table = (hue) => {
+		const trs = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(d => {
+			const l = 90 - (10 * d) ;
+			return tableRow(hue, l).outerHTML;
+		}).join("");
+
+		const table = document.createElement("table");
+		table.innerHTML = trs;
+		return table;
+	}
+
+	const tableRow = (hue, l) => {
+		const tds = [0, 1, 2, 3, 4, 5].map(d => {
+			const s = (20 * d);
+			return tableData(hue, s, l).outerHTML;
+		}).join("");
+
+		const tr = document.createElement("tr");
+		tr.innerHTML = tds;
+		return tr;
+	}
+
+	const tableData = (h, s, l) => {
+		const hsl = `hsl(${ h },${ s }%,${ l }%)`;
+
+		const rangeH = (h >= 0) && (h <= 360);
+		const rangeS = (s >= 0) && (s <= 100);
+		const rangeL = (l >= 0) && (l <= 100);
+		if (!rangeH || !rangeS || !rangeL) return false;
+
+		const rgb = hslToRgb16(h, s, l);
+
+		const td = document.createElement("td");
+		td.style = `background: ${ hsl };`;
+		td.innerHTML = `${ hsl }<br>${ rgb }`
+		return td;
+	}
+
+	const hueToRgb = (t, saturation, lightness) => {
+
+		t = (t < 0) ? t + 360 : t;
+		t = (t > 360) ? t - 360 : t;
+
+		var q = ((s, l) =>
+			((l < 0.5) ? l + l * s : l + s - (l * s))
+		)(saturation / 100, lightness / 100);
+
+		var p = (2 * lightness / 100) - q;
+
+		if (t < 60) {
+			p += (q - p) * t / 60;
+		} else if (t < 180) {
+			p = q;
+		} else if (t < 240) {
+			p += (q - p) * (240 - t) / 60;
+		}
+
+		const numberToString = (num) => {
+			const result = Math.round(num * 255).toString(16).toUpperCase();
+			return ("0" + result).slice(-2);
+		}
+		return numberToString(p);
+	};
+
+	const hslToRgb16 = (hue, saturation, lightness) => {
+
+		const s = saturation;
+		const l = lightness;
+
+		const red   = hueToRgb(hue + 120, s, l);
+		const green = hueToRgb(hue, s, l);
+		const blue  = hueToRgb(hue - 120, s, l);
+
+		const max = 2.55 * (l + (l < 50 ? l : 100 - l) * (s / 100));
+		const min = 2.55 * (l - (l < 50 ? l : 100 - l) * (s / 100));
+
+		let R, G, B;
+
+		switch (true) {
+			case (hue >= 0 && hue < 60):
+				R = max;
+				G = min + (max - min) * (hue / 60);
+				B = min;
+				break;
+			case (hue >= 60 && hue < 120):
+				R = min + (max - min) * ((120 - hue) / 60);
+				G = max;
+				B = min;
+				break;
+			case (hue >= 120 && hue < 180):
+				R = min;
+				G = max;
+				B = min + (max - min) * ((hue - 120) / 60);
+				break;
+			case (hue >= 180 && hue < 240):
+				R = min;
+				G = min + (max - min) * ((240 - hue) / 60);
+				B = max;
+				break;
+			case (hue >= 240 && hue < 300):
+				R = min + (max - min) * ((hue - 240) / 60);
+				G = min;
+				B = max;
+				break;
+			case (hue >= 300 && hue < 360):
+				R = max;
+				G = min;
+				B = min + (max - min) * ((360 - hue) / 60);
+				break;
+		}
+		
+		R = Math.round(R).toString(16).toUpperCase();
+	    G = Math.round(G).toString(16).toUpperCase();
+	    B = Math.round(B).toString(16).toUpperCase();
+
+		R = ("0" + R).slice(-2);
+	    G = ("0" + G).slice(-2);
+	    B = ("0" + B).slice(-2);
+
+		if (!(`#${ R }${ G }${ B }` == `#${ red }${ green }${ blue }`)) {
+			console.log(`#${ R }${ G }${ B }` + ", " + `#${ red }${ green }${ blue }`);		
+		}
+
+//		return `#${ R }${ G }${ B }`;
+		return `#${ red }${ green }${ blue }`;
+	}
+
+	const result = [
+		 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+		10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+		20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+		30, 31, 32, 33, 34, 35
+	].map(d => {
+		const hue = (10 * d);
+		return table(hue).outerHTML;
+	}).join("");
+
+	test.innerHTML = result;
+
+</script>
+
+
+</html>
